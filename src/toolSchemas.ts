@@ -74,6 +74,49 @@ export const toolSchemas = {
     wa_mark_message_as_read: z.object({
         message_id: messageIdSchema,
     }),
+    wa_send_video: z.object({
+        to: phoneNumberSchema,
+        video_url: urlSchema.optional(),
+        video_id: z.string().optional(),
+        caption: z.string().optional(),
+    }).refine(data => data.video_url || data.video_id, {
+        message: "Either video_url or video_id must be provided",
+    }),
+    wa_send_location: z.object({
+        to: phoneNumberSchema,
+        latitude: z.number(),
+        longitude: z.number(),
+        name: z.string().optional(),
+        address: z.string().optional(),
+    }),
+    wa_send_contact: z.object({
+        to: phoneNumberSchema,
+        contacts: z.array(z.object({
+            name: z.object({
+                formatted_name: z.string(),
+                first_name: z.string().optional(),
+                last_name: z.string().optional(),
+            }),
+            phones: z.array(z.object({
+                phone: z.string(),
+                type: z.enum(["CELL", "MAIN", "IPHONE", "HOME", "WORK"]).optional(),
+                wa_id: z.string().optional(),
+            })).optional(),
+            emails: z.array(z.object({
+                email: z.string().email(),
+                type: z.enum(["HOME", "WORK"]).optional(),
+            })).optional(),
+            org: z.object({
+                company: z.string().optional(),
+                department: z.string().optional(),
+                title: z.string().optional(),
+            }).optional(),
+            urls: z.array(z.object({
+                url: z.string().url(),
+                type: z.enum(["HOME", "WORK"]).optional(),
+            })).optional(),
+        })).min(1),
+    }),
     wa_get_business_profile: z.object({
         fields: z.array(z.string()).optional().default(["about", "address", "description", "email", "profile_picture_url", "websites", "vertical"]),
     }),
@@ -83,7 +126,10 @@ export const toolDescriptions = {
     wa_send_text: "Send a text message to a WhatsApp user.",
     wa_send_template: "Send a template message (required for initiating conversations).",
     wa_send_image: "Send an image to a WhatsApp user via URL or Media ID.",
+    wa_send_video: "Send a video to a WhatsApp user via URL or Media ID.",
     wa_send_document: "Send a document to a WhatsApp user via URL or Media ID.",
+    wa_send_location: "Send a location to a WhatsApp user.",
+    wa_send_contact: "Send one or more contacts to a WhatsApp user.",
     wa_mark_message_as_read: "Mark a message as read.",
     wa_get_business_profile: "Retrieve the business profile information.",
 };
@@ -95,6 +141,9 @@ export type ToolSchemaMap = typeof toolSchemas;
 export type WaSendTextArgs = z.infer<typeof toolSchemas.wa_send_text>;
 export type WaSendTemplateArgs = z.infer<typeof toolSchemas.wa_send_template>;
 export type WaSendImageArgs = z.infer<typeof toolSchemas.wa_send_image>;
+export type WaSendVideoArgs = z.infer<typeof toolSchemas.wa_send_video>;
 export type WaSendDocumentArgs = z.infer<typeof toolSchemas.wa_send_document>;
+export type WaSendLocationArgs = z.infer<typeof toolSchemas.wa_send_location>;
+export type WaSendContactArgs = z.infer<typeof toolSchemas.wa_send_contact>;
 export type WaMarkMessageAsReadArgs = z.infer<typeof toolSchemas.wa_mark_message_as_read>;
 export type WaGetBusinessProfileArgs = z.infer<typeof toolSchemas.wa_get_business_profile>;

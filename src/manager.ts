@@ -7,7 +7,10 @@ import {
     type WaSendTextArgs,
     type WaSendTemplateArgs,
     type WaSendImageArgs,
+    type WaSendVideoArgs,
     type WaSendDocumentArgs,
+    type WaSendLocationArgs,
+    type WaSendContactArgs,
     type WaMarkMessageAsReadArgs,
     type WaGetBusinessProfileArgs
 } from "./toolSchemas.js";
@@ -104,6 +107,58 @@ export class WhatsAppManager {
                 to: args.to,
                 type: "document",
                 document: docBody
+            }
+        });
+    }
+
+    async sendVideo(args: WaSendVideoArgs) {
+        const videoBody: Record<string, unknown> = {};
+        if (args.video_id) videoBody.id = args.video_id;
+        if (args.video_url) videoBody.link = args.video_url;
+        if (args.caption) videoBody.caption = args.caption;
+
+        return this.client.request({
+            method: "POST",
+            endpoint: this.messagesEndpoint,
+            body: {
+                messaging_product: "whatsapp",
+                recipient_type: "individual",
+                to: args.to,
+                type: "video",
+                video: videoBody
+            }
+        });
+    }
+
+    async sendLocation(args: WaSendLocationArgs) {
+        return this.client.request({
+            method: "POST",
+            endpoint: this.messagesEndpoint,
+            body: {
+                messaging_product: "whatsapp",
+                recipient_type: "individual",
+                to: args.to,
+                type: "location",
+                location: {
+                    latitude: args.latitude,
+                    longitude: args.longitude,
+                    name: args.name,
+                    address: args.address
+                }
+            }
+        });
+    }
+
+    async sendContact(args: WaSendContactArgs) {
+        return this.client.request({
+            method: "POST",
+            endpoint: this.messagesEndpoint,
+            body: {
+                messaging_product: "whatsapp",
+                recipient_type: "individual",
+                to: args.to,
+                type: "contacts",
+                contacts: args.contacts
             }
         });
     }
